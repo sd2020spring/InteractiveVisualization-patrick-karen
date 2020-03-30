@@ -17,30 +17,30 @@ class PyManMain:
     initialization and creating of the Game."""
 
     def __init__(self, width=640,height=480):
-        """Initialize"""
         """Initialize PyGame"""
         pygame.init()
         """Set the window Size"""
         self.width = width
         self.height = height
         """Create the Screen"""
-        self.screen = pygame.display.set_mode((self.width
-                                               , self.height))
+        self.screen = pygame.display.set_mode((self.width, self.height))
 
     def MainLoop(self):
         """This is the Main Loop of the Game"""
 
         """Load All of our Sprites"""
-        self.LoadSprites();
+        self.LoadSprites()
+
         """tell pygame to keep sending up keystrokes when they are
         held down"""
         pygame.key.set_repeat(500, 30)
 
         """Create the background"""
-        self.background = pygame.Surface(self.screen.get_size())
+        self.background = pygame.Surface(self.screen.get_size())  # Set background size
         self.background = self.background.convert()
-        self.background.fill((101,243,149))
+        self.background.fill((135,206,235)) # Set background color to sky blue
 
+        """Wait for user to move the bird around. If key was held down, move bird according (L, R, U, D)"""
         while 1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -52,50 +52,40 @@ class PyManMain:
                     or (event.key == K_DOWN)):
                         self.bird.move(event.key)
 
-            """Check for collision"""
-            lstCols = pygame.sprite.spritecollide(self.bird
-                                                 , self.obstacle_sprites
-                                                 , True)
+            """Check for collision between bird and obstacle"""
+            lstCols = pygame.sprite.spritecollide(self.bird,self.obstacle_sprites,True)
 
-            """Create Restarter for if you lose"""
-            def restarter():
-                pygame.font.init()
-                background_colour = (00,00,00)
-                (width, height) = (600, 600)
+            """Create an ending page with the option to play again or quit the game"""
+            def play_again():
+                bigfont = pygame.font.Font(None, 80)
+                smallfont = pygame.font.Font(None, 45)
+                text = bigfont.render("Play again?", 13, (0,0,0))
+                textx = 175
+                texty = 50
+                text2 = smallfont.render("Yes [Y]  |  No [N]", 13, (0,0,0))
+                textx2 = 200
+                texty2 = 150
 
-                screen = pygame.display.set_mode((width, height))
-                pygame.display.set_caption('You Lose. Restarting....')
-                screen.fill(background_colour)
-
+                self.screen.blit(self.background, (0, 0))
+                self.screen.blit(text, (textx, texty))
+                self.screen.blit(text2, (textx2, texty2))
                 pygame.display.flip()
 
-
-
-            """Restart the game if loss is achieved"""
+            """If a collision happens, go to the play again page, and register key input. If Y, restart game. If N, quit game."""
             if lstCols:
-                restarter()
-                time.sleep(3)
-                pygame.quit()
-                MainWindow = PyManMain()
-                MainWindow.MainLoop()
+                play_again()
+                while 1:
+                    for event in pygame.event.get():
+                        if event.type == KEYDOWN:
+                            if event.key == K_y:
+                                pygame.quit()
+                                MainWindow = PyManMain()
+                                MainWindow.MainLoop()
+                            elif event.key == K_n:
+                                pygame.quit()
 
-
-
-            """Do the Instructions"""
+            """Create game environment by setting the background, adding the bird, and placing the obstacles."""
             self.screen.blit(self.background, (0, 0))
-            if pygame.font:
-                font = pygame.font.Font(None, 36)
-                text = font.render("Don't hit any obstacles %s" % ""
-                                    , 1, (255, 0, 0))
-                text2 = font.render("Stay in as long as possible %s" % ""
-                                    , 1, (255, 0, 0))
-                textpos = text.get_rect(centery=self.background.get_width()/2)
-                textpos2 = text.get_rect(centerx=self.background.get_width()/2)
-
-
-                self.screen.blit(text, textpos)
-                self.screen.blit(text2, textpos2)
-
             self.obstacle_sprites.draw(self.screen)
             self.bird_sprites.draw(self.screen)
             pygame.display.flip()
@@ -111,7 +101,7 @@ class PyManMain:
         """Create the obstacle group"""
         self.obstacle_sprites = pygame.sprite.Group()
         """Create all of the obstacles and add them to the
-        obstacle_sprites group"""
+        obstacle_sprites group -- randomize placement of obstacles"""
         for x in range(nNumHorizontal):
             if x!=0:
                 if x!=2:
@@ -122,15 +112,11 @@ class PyManMain:
                                         if y!=random.randint(1,6):
                                                     self.obstacle_sprites.add(obstacle(pygame.Rect(x*64, y*64, 64, 64)))
 
-
-
-
-
-
-
-
 class Bird(pygame.sprite.Sprite):
-    """This is our sprite that will move around the screen"""
+    """This is our sprite that will move around the screen.
+    Use picture provided.
+    Define movement according to keystrokes.
+    """
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
@@ -159,10 +145,12 @@ class Bird(pygame.sprite.Sprite):
         self.rect.move_ip(xMove,yMove);
 
 class obstacle(pygame.sprite.Sprite):
-
+    """Create the obstacles of the game.
+    Use picture provided. Define rectangle according to the image.
+    """
     def __init__(self, rect=None):
         pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = load_image('obstacle.png',-1)
+        self.image, self.rect = load_image('obstacle.png')
         if rect != None:
             self.rect = rect
 
